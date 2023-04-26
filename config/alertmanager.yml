@@ -1,0 +1,36 @@
+global:
+  wechat_api_url: "https://qyapi.weixin.qq.com/cgi-bin/"
+  wechat_api_corp_id: "xxxx"
+route:
+  group_by: ['alertname','instance','port'] #按实例再细分
+  group_wait: 10s # 组等待时长
+  group_interval: 1m # 组间隔
+  repeat_interval: 1m  # 重复间隔
+  receiver: wechat-app-and-api
+  routes:
+  - match:
+      alertname: '端口检测'
+    receiver: wechat-app-and-api
+receivers:
+  - name: wechat-app-and-api
+    webhook_configs:
+    - url: 'http://localhost:9000/webhook' # 指定webhook地址
+      send_resolved: true
+    # - url: 'http://localhost:9001/webhook' # 纯json端口
+    #   send_resolved: true
+    
+    wechat_configs:
+    - send_resolved: true
+      to_party: 2
+      to_user: '@all'
+      agent_id: 1000003
+      api_secret: "xxxx"
+      message: '{{ template "wechat.default.message" . }}'
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
+templates:
+- "./wechat.tmpl"
