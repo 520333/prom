@@ -1,0 +1,8 @@
+###################### ICMP属于二层协议无需指定端口号 ######################
+- targets: 
+  - 36.134.46.246
+  labels:
+    name: xxx有限公司
+    instance_region: 华东-济南
+    group_region: 晋江
+

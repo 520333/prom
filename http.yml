@@ -1,0 +1,7 @@
+###################### HTTP目标可以省略端口号 默认探测80端口 443端口需携带https ######################
+- targets: 
+  - http://www.hxzyzz.com
+  labels:
+    instance_region: 华东-上海1
+    group_region: 南安
+    name: "xxx公司"

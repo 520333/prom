@@ -1,0 +1,10 @@
+###################### TCP 目标必须携带端口号 否则无法探测 ######################
+- targets: 
+  - 36.139.202.29:50231
+  - xxx.xxx.xxx.xxx
+  labels:
+    name: xxx学校
+    instance_region: 华东-上海1
+    group_region: 南安
+
+

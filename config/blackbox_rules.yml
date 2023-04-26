@@ -1,0 +1,11 @@
+groups:
+- name: blackbox-exporter # 组的名字，在这个文件中必须要唯一
+  rules:
+  - alert: 端口探活 # 告警的名字，在规则组中需要唯一
+    expr: probe_success{}==0
+    for: 1m # 超过多少时间才认为需要告警
+    labels:
+      severity: warning # 严重等级定义标签
+    annotations:
+      summary: "{{ $labels.name }}"
+      description: "{{ $labels.port }}端口,连续2分钟响应超时"
