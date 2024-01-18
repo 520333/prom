@@ -184,16 +184,16 @@ services:
 # 全局配置
 #
 # grafana账号
-GF_SECURITY_ADMIN_USER=ysd
+GF_SECURITY_ADMIN_USER='user'
 #
 # grafana密码
-GF_SECURITY_ADMIN_PASSWORD=ysd@2024
+GF_SECURITY_ADMIN_PASSWORD='password'
 #
 # 钉钉机器人webhook地址
-DINGTALK_BOT_URL='https://oapi.dingtalk.com/robot/send?access_token=7d6610f0bf5c0133331f2d7578aa0b4605b988ac67e1194c33a16a4bb0b3d7f9'
+DINGTALK_BOT_URL='机器人地址'
 #
 # 钉钉机器人加签密钥
-DINGTALK_BOT_SECRET='SEC47fdaf7703eb524fd5addb0ba2c97ea058fad75cb354c06a80f684eedeb6c0e2'
+DINGTALK_BOT_SECRET='密钥'
 #
 # 是否开启@所有人功能
 DINGTALK_BOT_ATALL=false
