@@ -1,0 +1,36 @@
+groups:
+- name: process
+  rules:
+  - alert: 进程数多
+    expr: sum(namedprocess_namegroup_states) by (instance) > 1000
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "服务器当前有{{ $value }}个进程"
+
+  - alert: 僵尸进程数
+    expr: sum by(instance, groupname) (namedprocess_namegroup_states{state="Zombie"}) > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "进程{{ $labels.groupname }}有{{ $value }}个僵尸进程"
+
+  - alert: 进程重启
+    #expr: ceil(time() - max by(instance, groupname) (namedprocess_namegroup_oldest_start_time_seconds)) < 60
+    expr: ceil(time() - max by(instance, groupname) (namedprocess_namegroup_oldest_start_time_seconds{groupname=~"^redis.*|^java.*|^nginx.*"})) < 60
+    for: 15s
+    labels:
+      severity: warning
+    annotations:
+      description: "进程{{ $labels.groupname }}在{{ $value }}秒前重启过"
+      
+  - alert: 进程退出
+    expr: max by(instance, groupname) (delta(namedprocess_namegroup_oldest_start_time_seconds{groupname=~"^redis.*|^java.*|^nginx.*"}[1d]))<0
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: "进程异常退出"
+      description: "{{ $labels.instance }}进程:{{ $labels.groupname }}退出"

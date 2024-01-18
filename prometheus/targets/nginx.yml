@@ -1,0 +1,4 @@
+- targets:
+  - www.isaveu.cn
+  labels:
+    name: 灰度nginx

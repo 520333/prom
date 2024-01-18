@@ -1,0 +1,11 @@
+groups:
+- name: nginx资源监控
+  rules:
+  - alert: nginx实例
+    expr: up{ job="nginx" }==0
+    for: 1s
+    labels:
+      severity: critical
+    annotations:
+      summary: "nginx实例不可用"
+      description: "{{ $labels.instance }} nginx离线,请检查"

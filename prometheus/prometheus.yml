@@ -1,0 +1,215 @@
+global:
+  scrape_interval: 15s 
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: 
+          - localhost:9093
+rule_files:
+  - ./rules/*.yml
+scrape_configs:
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+    - targets: ["localhost:9090"]
+
+  - job_name: node
+    metrics_path: /metrics
+    file_sd_configs:
+    - files:
+      - ./targets/node.yml
+      refresh_interval: 15s
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: '(.*):(\d+)'
+      target_label: ip
+      replacement: '${1}'
+
+  - job_name: process
+    metrics_path: /metrics
+    file_sd_configs:
+    - files:
+      - ./targets/process.yml
+      refresh_interval: 10s
+
+  - job_name: nginx
+    metrics_path: /monitor/format/prometheus
+    file_sd_configs:
+    - files:
+      - ./targets/nginx.yml
+      refresh_interval: 10s
+
+  - job_name: mysql
+    metrics_path: /metrics
+    file_sd_configs:
+    - files:
+      - ./targets/mysql.yml
+      refresh_interval: 10s
+  # - job_name: redis
+  #   metrics_path: /scrape
+  #   static_configs:
+  #     - targets:
+  #       - 192.168.17.120:6379
+  #       - 192.168.17.121:6379
+  #       - 192.168.17.123:6379
+  #       - 192.168.17.123:6479
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: 192.168.17.124:9121
+  # doris targets
+  # - job_name: doris
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets: 
+  #       - 192.168.17.120:8040
+  #       - 192.168.17.121:8030
+  #       - 192.168.17.124:8040
+  #       labels:
+  #         group: fe
+  #     - targets:
+  #       - 192.168.17.120:8060
+  #       - 192.168.17.121:8040
+  #       - 192.168.17.124:8060  
+  #       labels:
+  #         group: be
+  # nacos targets
+  # - job_name: nacos
+  #   metrics_path: /nacos/actuator/prometheus
+  #   static_configs:
+  #     - targets:
+  #       - 192.168.17.126:8848
+  # Srpingboot
+  # - job_name: collection-main
+  #   metrics_path: /collectionMain/prometheus
+  #   static_configs:
+  #     - targets:
+  #       - 192.168.17.123:8901
+  # elasticsearch-exporter
+  # - job_name: elasticsearch
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets:
+  #       - 192.168.17.124:9114
+
+
+
+  # #ICMP targets
+  # - job_name: ICMP
+  #   metrics_path: /probe
+  #   params:
+  #     module: [icmp]
+  #   file_sd_configs:
+  #     - files:
+  #       - ./icmp.yml
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label:  port # 如果没有port端口 给默认值
+  #       replacement: 无
+  #       action: replace
+  #     - target_label: __address__
+  #       replacement: localhost:9115
+
+  # #HTTP targets
+  # - job_name: HTTP
+  #   metrics_path: /probe
+  #   params:
+  #     module: [http_2xx]  # Look for a HTTP 200 response.
+  #   file_sd_configs:
+  #     - files:
+  #       - ./http.yml
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+
+  #     - target_label:  port # 如果没有port端口 给默认值
+  #       replacement: 缺省
+  #       action: replace
+
+  #     - source_labels: [__param_target]
+  #       regex: '(.*):(\d+)'
+  #       target_label: instance
+  #       replacement: '${1}'
+  #     - source_labels: [__address__]
+  #       regex: '(.*):(\d+)/(.*)' # 匹配http://xxx.xxx.xx:8089/xx/xxx
+  #       target_label: port
+  #       replacement: '${2}'
+  #     - source_labels: [__address__]
+  #       regex: '(.*):(\d+)'     # 匹配http://xxx.xxx.xx:8089
+  #       target_label: port
+  #       replacement: '$2'
+  #     - target_label: __address__
+  #       replacement: localhost:9115
+
+  # #TCP targets
+  # - job_name: TCP
+  #   metrics_path: /probe
+  #   params:
+  #     module: [tcp_connect]
+  #   file_sd_configs:
+  #     - files:
+  #       - ./tcp.yml
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+
+  #     - target_label:  port # 如果没有port端口 给默认值
+  #       replacement: 缺省
+  #       action: replace
+
+  #     - source_labels: [__address__]
+  #       regex: '([^:]+):\d+'       # 匹配以:开头的IP+端口号
+  #       target_label: instance
+  #     - source_labels: [__address__]
+  #       regex: '(.*):(\d+)'
+  #       target_label: port
+  #       replacement: '${2}'
+  #     - target_label: __address__
+  #       replacement: localhost:9115
+
+  # #SSH targets
+  # - job_name: SSH
+  #   metrics_path: /probe
+  #   params:
+  #     module: [ssh_banner]
+  #   file_sd_configs:
+  #     - files:
+  #       - ./ssh.yml
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+
+  #     - target_label: port # 如果没有port端口 给默认值
+  #       replacement: 缺省
+  #       action: replace
+  #     - target_label:  port # 如果没有port端口 给默认值
+  #       replacement: 缺省
+  #       action: replace
+  #     - source_labels: [__address__]
+  #       regex: '([^:]+):\d+'
+  #       target_label: instance
+  #     - source_labels: [__address__]
+  #       regex: '(.*):(\d+)'
+  #       target_label: port
+  #       replacement: '${2}'
+  #     - target_label: __address__
+  #       replacement: localhost:9115
+  #     # - source_labels: [__address__]
+  #     #   target_label: __param_target
+  #     # - source_labels: [__param_target]
+  #     #   target_label: instance
+  #     # - target_label: __address__
+  #     #   replacement: localhost:9115   

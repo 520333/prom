@@ -1,0 +1,47 @@
+groups:
+- name: redis资源监控
+  rules:
+  - alert: redis实例
+    expr: redis_up == 0
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: 'redis实例不可用'
+      description: "redis实例{{ $labels.instance }}离线,请检查"
+
+  - alert: redis备份丢失
+    expr: ((time() - redis_rdb_last_save_timestamp_seconds )>60 * 60 * 24)/(60 * 60 * 24)
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: "redis备份丢失"
+      description: "redis实例{{ $labels.instance }}超过24⼩时未备份,最后备份{{ printf \"%.1f\" $value }}天前"
+
+  - alert: redis内存
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "redis实例:{{ $labels.instance }}内存使用率超过90%"
+      description: "redis超出配置的最⼤内存,当前值:{{ printf \"%.1f\" $value }}"
+
+  - alert: redis连接数
+    expr: redis_connected_clients > 500
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "redis连接数过多"
+      description: "redis实例:{{ $labels.instance }}当前连接数为:{{ $value }}"
+
+  - alert: redis连接数
+    expr: redis_connected_clients < 1
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: "redis没有⾜够的连接"
+      description: "redis实例:{{ $labels.instance }}不足,当前连接数为:{{ $value }}"

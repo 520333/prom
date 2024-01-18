@@ -1,0 +1,91 @@
+groups:
+- name: p99指标
+  interval: 1m
+  rules:
+  - record: cpu:usage:rate1m
+    expr: (1 - avg(irate(node_cpu_seconds_total{mode="idle"}[3m])) by (instance,vendor,account,group,name)) * 100
+  - record: mem:usage:rate1m
+    expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+
+- name: 服务器资源监控
+  rules:
+  - alert: 服务器宕机
+    expr: up{job="node"}==0
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      summary: "服务器{{$labels.ip}}宕机"
+      description: "服务器{{$labels.instance}} 宕机超过3分钟,请检查"
+
+  - alert: 内存使用率
+    expr: (1-(node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes)) *100 > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "内存使用率过高"
+      description: "服务器:{{ $labels.instance }} 内存使用率超过90%,当前使用率:{{ printf \"%.1f\" $value }}%"
+        
+  - alert: CPU高负荷
+    expr: 100 - (avg by (instance,job)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "CPU使用率过高"
+      description: "服务器:{{ $labels.instance }} CPU使用大于90%，当前使用率:{{ printf \"%.1f\" $value }}%"
+      
+  - alert: 磁盘IO
+    expr: avg(irate(node_disk_io_time_seconds_total[1m])) by(instance,job)* 100 > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "流入磁盘IO使用率过高"
+      description: "服务器:{{ $labels.instance }} 流入磁盘IO大于90%,当前使用率:{{ printf \"%.1f\" $value }}%" 
+ 
+  - alert: 网络流入
+    expr: ((sum(rate (node_network_receive_bytes_total{device!~'tap.*|veth.*|br.*|docker.*|virbr*|lo*'}[5m])) by (instance,job)) / 100) > 102400
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "流入网络带宽过高"
+      description: "服务器:{{ $labels.instance }} 流入网络带宽持续5分钟高于100M. 当前RX带宽使用量:{{ printf \"%.1f\" $value }}MB"
+ 
+  - alert: 网络流出
+    expr: ((sum(rate (node_network_transmit_bytes_total{device!~'tap.*|veth.*|br.*|docker.*|virbr*|lo*'}[5m])) by (instance,job)) / 100) > 102400
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "流出网络带宽过高"
+      description: "服务器:{{ $labels.instance }} 流出网络带宽持续5分钟高于100M. 当前RX带宽使用量:{{ printf \"%.1f\" $value }}MB"
+  
+  - alert: TCP连接数
+    expr: node_netstat_Tcp_CurrEstab > 10000
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: " TCP_ESTABLISHED过高"
+      description: "服务器:{{ $labels.instance }} TCP_ESTABLISHED大于10000,当前连接数:{{ $value }}"
+ 
+  - alert: 磁盘容量
+    expr: 100-(node_filesystem_free_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes {fstype=~"ext4|xfs"}*100) > 85
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "磁盘分区使用率过高"
+      description: "服务器:{{ $labels.instance }} 磁盘分区:{{ $labels.mountpoint }}使用率大于85% 当前使用率:{{ printf \"%.1f\" $value }}%"
+
+  - alert: swap分区
+    expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: swap分区即将填满
+      description: "服务器:{{ $labels.instance }} Swap分区使用率大于80% 当前值:{{ $value }}"

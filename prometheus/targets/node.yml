@@ -1,0 +1,9 @@
+- targets: 
+  - 172.18.16.118:9100
+  labels:
+    name: www.isaveu.cn灰度节点
+
+- targets:
+  - 172.18.124.132:9100
+  labels:
+    name: DNS服务器

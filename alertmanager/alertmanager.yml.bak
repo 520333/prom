@@ -1,0 +1,21 @@
+global:
+route:
+  group_by: ['alertname','instance','port']
+  group_wait: 0s
+  group_interval: 1m
+  repeat_interval: 4h
+  receiver: wechatBotApi
+
+receivers:
+  - name: wechatBotApi
+    webhook_configs:
+    - url: 'http://localhost:9000/webhook'
+      send_resolved: true
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
+# templates:
+# - "./wechat.tmpl"

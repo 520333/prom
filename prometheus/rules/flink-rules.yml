@@ -1,0 +1,11 @@
+groups:
+- name: flink资源监控
+  rules:
+  - alert: flinki作业
+    expr: ((flink_jobmanager_job_uptime{})-(flink_jobmanager_job_uptime{} offset 30s))/1000 <10
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "flinkJob作业异常"
+      description: "flink实时作业任务异常。 当前值:{{ $value }}"

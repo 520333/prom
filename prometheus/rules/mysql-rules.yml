@@ -1,0 +1,65 @@
+groups:
+- name: mysql资源监控
+  rules:
+  - alert: mysql实例
+    expr: mysql_up == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "mysql实例不可用"
+      description: "mysql实例:{{ $labels.instance }}离线,请检查"
+
+  - alert: mysql连接数
+    expr: max_over_time(mysql_global_status_threads_connected[1m]) / mysql_global_variables_max_connections * 100 > 80
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "mysql连接数过多"
+      description: "mysql实例:{{ $labels.instance }}连接数>80%,当前连接数:{{ printf \"%.0f\" $value }}"
+
+  - alert: mysql线程
+    expr: max_over_time(mysql_global_status_threads_running[1m]) > 20
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "mysql运行的线程过多,"
+      description: "mysql实例:{{ $labels.instance }}运行的线程 > 20 当前线程数:{{ $value }}"
+
+  - alert: mysql慢查询
+    expr: increase(mysql_global_status_slow_queries[2m]) > 2
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "mysql慢日志警告"
+      description: "mysql实例:{{ $labels.instance }}在过去2分钟有新的{{ printf \"%.0f\" $value }}条慢查询"
+
+  - alert: mysqlInnodb日志
+    expr: rate(mysql_global_status_innodb_log_waits[15m]) > 10
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: "mysql innodb日志等待"
+      description: "mysql实例:{{ $labels.instance }} innodb日志写入停滞,当前值:{{ $value }}"
+
+  - alert: mysql重启
+    expr: mysql_global_status_uptime < 60
+    for: 0m
+    labels:
+      severity: info
+    annotations:
+      summary: "mysql重启"
+      description: "mysql实例:{{ $labels.instance }}不到一分钟前,mysql重启过"
+
+  - alert: mysql主从延迟
+    expr: ((mysql_slave_status_seconds_behind_master - mysql_slave_status_sql_delay) and ON (instance) mysql_slave_status_master_server_id > 0 ) >2
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: mysql从节点复制延迟
+      description: "mysql从节点:{{ $labels.instance }}复制延迟大于2秒 当前延迟:{{ $value }}秒"

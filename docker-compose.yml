@@ -1,0 +1,111 @@
+version: '3.7'
+services:
+  prometheus:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/prometheus:v2.44.0
+    image: harbor.ihuizong.cn:1443/prom/prometheus:2.44.0
+    container_name: prometheus
+    working_dir: /etc/prometheus
+    restart: always
+    mem_limit: 500m
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - ./prometheus/data:/prometheus
+    command:
+      - --web.enable-lifecycle
+      - --storage.tsdb.retention.time=30d
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+
+  grafana:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/grafana:9.4.7
+    image: harbor.ihuizong.cn:1443/prom/grafana:9.4.7
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-}
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini:rw
+      - ./grafana/data:/var/lib/grafana:rw
+    mem_limit: 500m
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+    depends_on:
+    - prometheus
+
+  alertmanager:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/alertmanager:v0.25.0
+    image: harbor.ihuizong.cn:1443/prom/alertmanager:0.25.0
+    container_name: alertmanager
+    working_dir: /etc/alertmanager
+    restart: always
+    mem_limit: 100m
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+    depends_on:
+    - prometheus
+
+  node-exporter:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/node-exporter:1.5.0
+    image: harbor.ihuizong.cn:1443/prom/node-exporter:1.5.0
+    container_name: node-exporter
+    command:
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+
+  webhook:
+    image: harbor.ihuizong.cn:1443/prom/dingtalkwebhook:1.0
+    container_name: webhook
+    restart: always
+    mem_limit: 200m
+    environment:
+      - url=${DINGTALK_BOT_URL:-}
+      - secret=${DINGTALK_BOT_SECRET:-}
+      - atall=${DINGTALK_BOT_ATALL:-}
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+    depends_on:
+    - alertmanager
+
+  tengine:
+    image: harbor.ihuizong.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
+    container_name: tengine
+    restart: always
+    network_mode: host
+    volumes:
+    - ./tengine/conf.d:/etc/nginx/conf.d
+    - ./tengine/nginx.conf:/etc/nginx/nginx.conf
+    - ./tengine/html:/etc/nginx/html
+    - ./tengine/ssl:/etc/nginx/ssl
+    - ./tengine/logs:/var/log/nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: ${LOG_MAX_SIZE:-}
+    depends_on:
+    - prometheus
+    - alertmanager
+    - grafana

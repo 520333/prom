@@ -1,0 +1,17 @@
+version: '3'
+services:
+  tengine:
+    image: harbor.ihuizong.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
+    container_name: tengine
+    restart: always
+    network_mode: host
+    volumes:
+    - ./conf.d:/etc/nginx/conf.d
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    - ./html:/etc/nginx/html
+    - ./ssl:/etc/nginx/ssl
+    - ./logs:/var/log/nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
