@@ -74,6 +74,7 @@ services:
         max-size: ${LOG_MAX_SIZE:-}
 
   webhook:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/dingtalkwebhook:1.2
     image: harbor.ihuizong.cn:1443/prom/dingtalkwebhook:1.0
     container_name: webhook
     restart: always
@@ -91,6 +92,7 @@ services:
     - alertmanager
 
   tengine:
+    #image: registry.cn-shanghai.aliyuncs.com/rushbi/tengine-vts:1.0
     image: harbor.ihuizong.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
     container_name: tengine
     restart: always
