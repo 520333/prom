@@ -1,8 +1,7 @@
 version: '3.7'
 services:
   prometheus:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/prometheus:v2.44.0
-    image: harbor.ihuizong.cn:1443/prom/prometheus:2.44.0
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/prometheus:v2.44.0
     container_name: prometheus
     working_dir: /etc/prometheus
     restart: always
@@ -20,8 +19,7 @@ services:
         max-size: ${LOG_MAX_SIZE:-}
 
   grafana:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/grafana:9.4.7
-    image: harbor.ihuizong.cn:1443/prom/grafana:9.4.7
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/grafana:9.4.7
     container_name: grafana
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-}
@@ -41,8 +39,7 @@ services:
     - prometheus
 
   alertmanager:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/alertmanager:v0.25.0
-    image: harbor.ihuizong.cn:1443/prom/alertmanager:0.25.0
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/alertmanager:v0.25.0
     container_name: alertmanager
     working_dir: /etc/alertmanager
     restart: always
@@ -58,8 +55,7 @@ services:
     - prometheus
 
   node-exporter:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/node-exporter:1.5.0
-    image: harbor.ihuizong.cn:1443/prom/node-exporter:1.5.0
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/node-exporter:1.5.0
     container_name: node-exporter
     command:
       - '--path.rootfs=/host'
@@ -74,8 +70,7 @@ services:
         max-size: ${LOG_MAX_SIZE:-}
 
   webhook:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/dingtalkwebhook:1.2
-    image: harbor.ihuizong.cn:1443/prom/dingtalkwebhook:1.0
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/dingtalkwebhook:1.2
     container_name: webhook
     restart: always
     mem_limit: 200m
@@ -92,8 +87,7 @@ services:
     - alertmanager
 
   tengine:
-    #image: registry.cn-shanghai.aliyuncs.com/rushbi/tengine-vts:1.0
-    image: harbor.ihuizong.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
+    image: registry.cn-shanghai.aliyuncs.com/rushbi/tengine-vts:1.0
     container_name: tengine
     restart: always
     network_mode: host
