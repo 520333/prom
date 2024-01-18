@@ -10,7 +10,7 @@
 
 | 主机名称                |    IP地址    | 系统版本    | 内核版本               | CPU   | 内存 |
 | ----------------------- | :----------: | ----------- | ---------------------- | ----- | ---- |
-| iZwz951z4l8ihd8z7za267Z | 120.79.48.25 | aliyun os 3 | 5.10.134-15.al8.x86_64 | 4Core | 8G   |
+| prometheus | 192.168.50.191 | aliyun os 3 | 5.10.134-15.al8.x86_64 | 4Core | 8G   |
 
 **运行环境：`docker/container`**
 
@@ -18,9 +18,9 @@
 
 | 域名                     | 服务                   |
 | ------------------------ | ---------------------- |
-| grafana.ihuizong.cn      | grafana数据可视化      |
-| prometheus.ihuizong.cn   | prometheus指标采集     |
-| alertmanager.ihuizong.cn | alertmanager告警中间件 |
+| grafana.yourdomain.cn      | grafana数据可视化      |
+| prometheus.yourdomain.cn   | prometheus指标采集     |
+| alertmanager.yourdomain.cn | alertmanager告警中间件 |
 
 ### 应用规划
 
@@ -64,7 +64,7 @@ version: '3.7'
 services:
   prometheus:
     #image: registry.cn-shanghai.aliyuncs.com/rushbi/prometheus:v2.44.0
-    image: harbor.ihuizong.cn:1443/prom/prometheus:2.44.0
+    image: harbor.yourdomain.cn:1443/prom/prometheus:2.44.0
     container_name: prometheus
     working_dir: /etc/prometheus
     restart: always
@@ -83,7 +83,7 @@ services:
 
   grafana:
     #image: registry.cn-shanghai.aliyuncs.com/rushbi/grafana:9.4.7
-    image: harbor.ihuizong.cn:1443/prom/grafana:9.4.7
+    image: harbor.yourdomain.cn:1443/prom/grafana:9.4.7
     container_name: grafana
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-}
@@ -104,7 +104,7 @@ services:
 
   alertmanager:
     #image: registry.cn-shanghai.aliyuncs.com/rushbi/alertmanager:v0.25.0
-    image: harbor.ihuizong.cn:1443/prom/alertmanager:0.25.0
+    image: harbor.yourdomain.cn:1443/prom/alertmanager:0.25.0
     container_name: alertmanager
     working_dir: /etc/alertmanager
     restart: always
@@ -121,7 +121,7 @@ services:
 
   node-exporter:
     #image: registry.cn-shanghai.aliyuncs.com/rushbi/node-exporter:1.5.0
-    image: harbor.ihuizong.cn:1443/prom/node-exporter:1.5.0
+    image: harbor.yourdomain.cn:1443/prom/node-exporter:1.5.0
     container_name: node-exporter
     command:
       - '--path.rootfs=/host'
@@ -136,7 +136,7 @@ services:
         max-size: ${LOG_MAX_SIZE:-}
 
   webhook:
-    image: harbor.ihuizong.cn:1443/prom/dingtalkwebhook:1.0
+    image: harbor.yourdomain.cn:1443/prom/dingtalkwebhook:1.0
     container_name: webhook
     restart: always
     mem_limit: 200m
@@ -153,7 +153,7 @@ services:
     - alertmanager
 
   tengine:
-    image: harbor.ihuizong.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
+    image: harbor.yourdomain.cn:1443/base/tengine-2.3.2-vts-0.2.1-alpine:1.0
     container_name: tengine
     restart: always
     network_mode: host
@@ -260,7 +260,7 @@ scrape_configs:
 
 ```yaml
 [root@metrics prom]# grep "^[a-Z]" grafana/grafana.ini
-domain = grafana.ihuizong.cn                        # 域名
+domain = grafana.yourdomain.cn                        # 域名
 serve_from_sub_path = true							# 通过ng反向代理需要加上
 enabled = true                                      # 开启匿名访问grafana面板
 ```
@@ -324,7 +324,7 @@ ENTRYPOINT ["sh","-c","java -jar app.jar ${url} ${secret}"]
 ### 2.grafana站点配置
 
 ```nginx
-[root@metrics conf.d]# cat grafana.ihuizong.cn.conf
+[root@metrics conf.d]# cat grafana.yourdomain.cn.conf
 map $http_upgrade $connection_upgrade {
   default upgrade;
   '' close;
@@ -335,7 +335,7 @@ upstream grafana {
 
 server {
   listen 80;
-  server_name grafana.ihuizong.cn;
+  server_name grafana.yourdomain.cn;
 
   location / {
     proxy_set_header Host $http_host;
@@ -355,12 +355,12 @@ server {
 ### 3.Prometheus站点配置
 
 ```nginx
-[root@metrics conf.d]# cat prometheus.ihuizong.cn.conf
+[root@metrics conf.d]# cat prometheus.yourdomain.cn.conf
 server{
 	listen 80;
-	server_name prometheus.ihuizong.cn;
+	server_name prometheus.yourdomain.cn;
 	location / {
-		auth_basic "ihuizong.cn";
+		auth_basic "yourdomain.cn";
 		auth_basic_user_file conf.d/auth;
 		proxy_pass http://localhost:9090;
 		include conf.d/proxy_params;
@@ -371,12 +371,12 @@ server{
 ### 4.alertmanager站点配置
 
 ```nginx
-[root@metrics conf.d]# cat alertmanager.ihuizong.cn.conf
+[root@metrics conf.d]# cat alertmanager.yourdomain.cn.conf
 server{
 	listen 80;
-	server_name alertmanager.ihuizong.cn;
+	server_name alertmanager.yourdomain.cn;
 	location / {
-		auth_basic "ihuizong.cn";
+		auth_basic "yourdomain.cn";
 		auth_basic_user_file conf.d/auth;
 		proxy_pass http://localhost:9093;
 		include conf.d/proxy_params;
